@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 using TMPro;
 
 
-public class CameraController : MonoBehaviour
+public class NewBehaviourScript : MonoBehaviour
 
 {
 
