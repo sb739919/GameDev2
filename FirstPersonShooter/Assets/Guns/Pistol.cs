@@ -4,81 +4,14 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.HID;
 using UnityEngine.InputSystem.Interactions;
+using UnityEngine.Playables;
 
-public class Pistol : MonoBehaviour
+public class Pistol : Gun
 {
 
-    public GunData gun_data;
-    public Camera cam;
-    public Ray ray;
-
-    //Ammo Variable
-    private int ammo_in_clip;
-
-
-    //Debug
-    public TMP_Text debug_text;
-
-
-    //Shooting
-    private bool primary_fire_is_shooting = false;
-    private bool primary_fire_hold = false;
-
-
-    private float shoot_delay_timer = 0.0f;
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        //Set variable
-        ammo_in_clip = gun_data.ammo_per_clip;
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        //Debug.DrawRay(cam.transform.position, cam.transform.forward * 10000, Color.green);
-
-        //Debug text
-        debug_text.text = "Ammo in Clip" + ammo_in_clip.ToString();
-        PrimaryFire();
-
-        if (shoot_delay_timer > 0) shoot_delay_timer -= Time.deltaTime;
-    }
-
-    public void GetPrimaryFireInput(InputAction.CallbackContext context)
-    {
-
-        if (context.phase == InputActionPhase.Started)
-        {
-            primary_fire_is_shooting = true;
-        }
-
-        if(gun_data.automatic)
-        {
-            if( context.interaction is HoldInteraction && context.phase == InputActionPhase.Performed) 
-            { 
-                primary_fire_hold = true;            
-            }
-
-           
-        }
-        if (context.phase == InputActionPhase.Canceled)
-        {
-            primary_fire_is_shooting = false;
-            primary_fire_hold = false;
-        }
-
-    }
-
-    public void GetSecondaryFireInput(InputAction.CallbackContext context)
-    {
-        if (context.phase == InputActionPhase.Started) SecondaryFire();
-
-    }
-    private void PrimaryFire()
+    protected override void PrimaryFire()
     {
         if (shoot_delay_timer <= 0.0f)
         {
@@ -100,9 +33,13 @@ public class Pistol : MonoBehaviour
                 //Ammo
                 ammo_in_clip--;
                 if (ammo_in_clip <= 0) ammo_in_clip = gun_data.ammo_per_clip;
-              
 
+                //particle
+                muzzle_flash.Play();
+                TrailRenderer trail = Instantiate(bullet_trail, shoot_point.position, Quaternion.identity);
+                StartCoroutine(SpawnTrail(trail, dir, hit));
             }
+
         }
     }
 
